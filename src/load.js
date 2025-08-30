@@ -1,5 +1,7 @@
 import { randomize, reset, startGame } from ".";
+import { createActionText } from "./components/actionText";
 
+createActionText();
 export function createGrids(firstPlyName, scndPlyName) {
   const leftDiv = document.createElement("div");
   const rightDiv = document.createElement("div");

@@ -220,3 +220,11 @@ p {
 .play-btn:active {
   background-color: #77c577;
 }
+
+#action-text {
+  position: fixed;
+  top: 5%;
+  left: 50%;
+  transform: translate(-50%, 0);
+  text-align: center;
+}
