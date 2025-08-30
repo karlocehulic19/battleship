@@ -119,6 +119,7 @@ export class GameState {
 
   changeState(new_state) {
     this.state = new_state;
+    dispatchEvent(this.#stateChangeEvent);
   }
 
   get stateChangeEvent() {
@@ -204,4 +205,3 @@ export function shuffle(arr) {
     i--;
   }
 }
-
