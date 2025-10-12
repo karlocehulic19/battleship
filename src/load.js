@@ -11,7 +11,7 @@ export function createGrids(firstPlyName, scndPlyName) {
   const leftName = document.createElement("p");
   const rightName = document.createElement("p");
   const leftContainer = new ShipContainer();
-  const rightContainer = new ShipContainer();
+  const rightContainer = new ShipContainer({ isOpponent: true });
 
   leftDiv.className = "playing-div";
   leftDiv.id = "left-playing-div";
@@ -55,9 +55,12 @@ class Grid {
 }
 
 class ShipContainer {
-  constructor() {
+  constructor(options) {
     this.container = document.createElement("div");
-    this.container.className = "ship-container";
+    this.container.classList.add("ship-container");
+    if (options && options.isOpponent) {
+      this.container.classList.add("opponent");
+    }
   }
   getElement() {
     return this.container;
