@@ -33,12 +33,20 @@
 }
 
 .ship-container {
+  position: relative;
   padding: 20px;
   background-color: #f3f3f3;
   width: 15vw;
   height: max(45vh, 100%);
   border-radius: 20px;
   box-shadow: 0 0 6px -3px;
+}
+
+.ship-container.opponent::before {
+  content: "Opponent ships";
+  font-size: 1.5rem;
+  position: absolute;
+  top: 3.5rem;
 }
 
 p {
