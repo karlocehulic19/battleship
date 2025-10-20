@@ -13,7 +13,12 @@ import { ErrorMessage, PlayButton, WinningMessage } from "./load.js";
 const WINNING_CHANNEL = "win";
 
 export class Turn {
-  constructor(ply1, ply2) {
+  private left: GridPlayer;
+  private right: GridPlayer;
+  private next: GridPlayer;
+  private play: boolean;
+
+  constructor(ply1: GridPlayer, ply2: GridPlayer) {
     this.left = ply1;
     this.right = ply2;
     this.next = ply1;
@@ -59,11 +64,18 @@ export class Turn {
   }
 }
 
-export let ply1;
-let ply2;
+export let ply1: GridPlayer;
+let ply2: GridPlayer;
 export let turn;
 
-function play() {
+type GridPlayer = {
+  logic: Player;
+  grid: any;
+  name: string;
+  container?: any;
+};
+
+export function play() {
   GridController.clearGrid();
   ply1 = {
     logic: new Player(),
@@ -92,8 +104,6 @@ function play() {
   GridController.removeCellsListeners();
   GridController.addListenersToCells(turn.isComputerPlaying());
 }
-
-play();
 
 export function placeFromEvent(m, n, left) {
   if (turn.isLeftTurn() !== left) {
@@ -192,4 +202,5 @@ export function startGame() {
   return false;
 }
 
+play();
 PubSub.subscribe(WINNING_CHANNEL, declareWinner);
