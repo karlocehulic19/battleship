@@ -7,7 +7,7 @@ import {
   leftGrid,
   rightGrid,
 } from "./ui-controller.js";
-import { ComputerPly, GameState, globalGameState, Player } from "./logic.js";
+import { ComputerPly, GameState, globalGameState, Player } from "./logic";
 import { ErrorMessage, PlayButton, WinningMessage } from "./load.js";
 
 const WINNING_CHANNEL = "win";

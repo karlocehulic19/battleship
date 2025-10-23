@@ -1,6 +1,10 @@
 import PubSub from "pubsub-js";
 
 export class Ship {
+  private length: number;
+  private hp: number;
+  private publish: string;
+
   constructor(length, publish) {
     this.length = length;
     this.hp = length;
@@ -19,8 +23,11 @@ export class Ship {
 }
 
 export class GameBoard {
-  static #shipId = 0;
+  private static shipId = 0;
   static BOARD_SIZE = 10;
+
+  private aliveShips: number;
+  private ships: any[];
   constructor() {
     // Board represented as m * n grid
     this.aliveShips = 0;
@@ -36,9 +43,9 @@ export class GameBoard {
     this.checkPlace(m, n);
     this.checkLength(m, n, length, vertical);
     let _cells = [];
-    const pubSubChannel = `board-channel-${GameBoard.#shipId++}`;
+    const pubSubChannel = `board-channel-${GameBoard.shipId++}`;
     const newShip = new Ship(length, pubSubChannel);
-    this.token = PubSub.subscribe(pubSubChannel, () => this.sinkAnother());
+    PubSub.subscribe(pubSubChannel, () => this.sinkAnother());
     this.ships.push([...arguments, newShip]);
     try {
       if (!vertical) {
@@ -115,21 +122,24 @@ export class GameState {
   };
 
   state = GameState.states["PLAYER_TURN"];
-  #stateChangeEvent = new CustomEvent("game_state_changed");
+  private _stateChangeEvent = new CustomEvent("game_state_changed");
 
   changeState(new_state) {
     this.state = new_state;
-    dispatchEvent(this.#stateChangeEvent);
+    dispatchEvent(this._stateChangeEvent);
   }
 
   get stateChangeEvent() {
-    return this.#stateChangeEvent;
+    return this._stateChangeEvent;
   }
 }
 
 export const globalGameState = new GameState();
 
 class BoardCell {
+  private checked: boolean;
+  private ship: boolean;
+
   constructor() {
     this.checked = false;
     this.ship = false;
@@ -152,6 +162,8 @@ class BoardCell {
 }
 
 export class Player {
+  board: GameBoard;
+
   constructor() {
     this.board = new GameBoard();
   }
@@ -162,7 +174,8 @@ export class Player {
       try {
         const m = this.getRandomCoords();
         const n = this.getRandomCoords();
-        this.board.place(m, n, lengths[i], Math.floor(Math.random() * 2));
+        const isVertical = !!Math.floor(Math.random() * 2);
+        this.board.place(m, n, lengths[i], isVertical);
         i++;
       } catch {
         continue;
@@ -174,7 +187,11 @@ export class Player {
   }
 }
 
+type Coordinates = [a: number, b: number];
+
 export class ComputerPly extends Player {
+  private guesses: Coordinates[];
+
   constructor() {
     super();
     this.placeShips();
