@@ -60,6 +60,8 @@ class ShipContainer {
     this.container.classList.add("ship-container");
     if (options && options.isOpponent) {
       this.container.classList.add("opponent");
+    } else {
+      this.container.classList.add("player");
     }
   }
   getElement() {
