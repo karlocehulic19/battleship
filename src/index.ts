@@ -75,7 +75,7 @@ type GridPlayer = {
   container?: any;
 };
 
-export function play() {
+function play() {
   GridController.clearGrid();
   ply1 = {
     logic: new Player(),
