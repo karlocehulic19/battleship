@@ -176,7 +176,7 @@ export class ShipContainerController {
 class DragShip {
   static picked;
   static shipId = 0;
-  constructor(length, vertical = false) {
+  constructor(length) {
     this.length = length;
     this.m = null;
     this.n = null;
@@ -205,9 +205,9 @@ class DragShip {
     this.main.addEventListener("dragenter", (e) => e.stopPropagation());
     this.main.addEventListener("click", (e) => this.rotate(e));
     this.main.addEventListener("dragend", (e) => this.sendBack(e));
-    this.main.addEventListener("dragstart", (e) => this.clear());
+    this.main.addEventListener("dragstart", () => this.clear());
   }
-  clear(e) {
+  clear() {
     if (this.m !== null && this.n !== null) {
       ply1.logic.board.remove(...this.getPlacingValue());
     }
