@@ -81,7 +81,7 @@ export class GridController {
           ply1.logic.board.place(...DragShip.picked.getPlacingValue());
         } catch (error) {
           new ErrorMessage(error).show(1000);
-          DragShip.picked.sendBack(e);
+          DragShip.picked.sendBack(e, true);
         }
       };
       GridController.cellDragEvents.push([cell, addDrag]);
