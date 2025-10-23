@@ -1,6 +1,7 @@
 import { randomize, reset, startGame } from ".";
 import { createActionText } from "./components/actionText";
-import { GameState, globalGameState } from "./logic";
+import { GameStateValue } from "./logic/GameState";
+import { globalGameState } from "./logic/logic";
 
 createActionText();
 export function createGrids(firstPlyName, scndPlyName) {
@@ -106,7 +107,7 @@ export class WinningMessage {
     resetButton.addEventListener("click", () => {
       WinningMessage.remove();
       callBack();
-      globalGameState.changeState(GameState.states["PLACING_SHIPS"]);
+      globalGameState.changeState(GameStateValue.PLACING_SHIPS);
     });
 
     WinningMessage.winDiv.appendChild(winP);

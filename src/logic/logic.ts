@@ -1,12 +1,11 @@
 import PubSub from "pubsub-js";
+import { GameState } from "./GameState";
 
 export class Ship {
-  private length: number;
   private hp: number;
-  private publish: string;
+  private publish: PubSubJS.Message;
 
-  constructor(length, publish) {
-    this.length = length;
+  constructor(length: number, publish: PubSubJS.Message) {
     this.hp = length;
     this.publish = publish;
   }
@@ -39,7 +38,7 @@ export class GameBoard {
       }
     }
   }
-  place(m, n, length, vertical = false) {
+  place(m: number, n: number, length: number, vertical = false) {
     this.checkPlace(m, n);
     this.checkLength(m, n, length, vertical);
     let _cells = [];
@@ -68,10 +67,10 @@ export class GameBoard {
       throw error;
     }
   }
-  isShip(m, n) {
+  isShip(m: number, n: number) {
     return this[m][n].isShip();
   }
-  checkPlace(m, n) {
+  checkPlace(m: number, n: number) {
     if (
       m < 0 ||
       m > GameBoard.BOARD_SIZE - 1 ||
@@ -81,13 +80,13 @@ export class GameBoard {
       throw new Error("Wrong ship coordinates");
     else if (this[m][n].isShip()) throw new Error("Cell already occupied");
   }
-  checkLength(m, n, length, vertical) {
+  checkLength(m: number, n: number, length: number, vertical: boolean) {
     if (length < 1 || (!vertical && n + length - 1 > GameBoard.BOARD_SIZE - 1))
       throw new Error("Ship too long");
     else if (vertical && m + length - 1 > GameBoard.BOARD_SIZE - 1)
       throw new Error("Ship too long");
   }
-  receiveAttack(m, n) {
+  receiveAttack(m: number, n: number) {
     if (this[m][n].isChecked()) throw new Error("Cell already checked");
     this[m][n].check();
     if (this[m][n].isShip()) this[m][n].ship.hit();
@@ -102,7 +101,7 @@ export class GameBoard {
   getAllShips() {
     return this.ships;
   }
-  remove(m, n, length, vertical = false) {
+  remove(m: number, n: number, length: number, vertical = false) {
     for (let i = 0; i < length; i++) {
       let row = m;
       let col = n;
@@ -111,26 +110,6 @@ export class GameBoard {
       this[row][col] = new BoardCell();
     }
     this.sinkAnother();
-  }
-}
-
-export class GameState {
-  static states = {
-    PLAYER_TURN: "player_turn_state",
-    COMPUTER_TURN: "computer_turn_state",
-    PLACING_SHIPS: "player_placing_ships_state",
-  };
-
-  state = GameState.states["PLAYER_TURN"];
-  private _stateChangeEvent = new CustomEvent("game_state_changed");
-
-  changeState(new_state) {
-    this.state = new_state;
-    dispatchEvent(this._stateChangeEvent);
-  }
-
-  get stateChangeEvent() {
-    return this._stateChangeEvent;
   }
 }
 
@@ -144,7 +123,7 @@ class BoardCell {
     this.checked = false;
     this.ship = false;
   }
-  makeShip(shipObj) {
+  makeShip(shipObj: boolean) {
     this.ship = shipObj;
   }
   unmakeShip() {
@@ -211,7 +190,7 @@ export class ComputerPly extends Player {
   }
 }
 
-export function shuffle(arr) {
+export function shuffle(arr: Coordinates[]) {
   let i = arr.length - 1;
   while (i > 0) {
     const replacement = Math.floor(arr.length * Math.random());

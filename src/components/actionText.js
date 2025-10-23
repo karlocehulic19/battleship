@@ -1,19 +1,19 @@
-import { GameState, globalGameState } from "../logic";
+import { globalGameState } from "../logic/logic";
+import { GameStateValue } from "../logic/GameState";
 
 export function createActionText() {
   const messageMapping = {
-    [GameState.states["PLAYER_TURN"]]:
+    [GameStateValue.PLAYER_TURN]:
       "Its your turn, click on oppents board to attack his ships",
-    [GameState.states["COMPUTER_TURN"]]:
-      "Wait for the opponent to finsih attacking",
-    [GameState.states["PLACING_SHIPS"]]:
+    [GameStateValue.COMPUTER_TURN]: "Wait for the opponent to finsih attacking",
+    [GameStateValue.PLACING_SHIPS]:
       "Hello, place your ships and click play to start!",
   };
 
   const actionText = document.createElement("h1");
   actionText.id = "action-text";
 
-  actionText.textContent = messageMapping[GameState.states["PLACING_SHIPS"]];
+  actionText.textContent = messageMapping[GameStateValue.PLACING_SHIPS];
   document.body.appendChild(actionText);
 
   addEventListener(globalGameState.stateChangeEvent.type, () => {

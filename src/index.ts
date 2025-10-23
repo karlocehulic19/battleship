@@ -7,8 +7,9 @@ import {
   leftGrid,
   rightGrid,
 } from "./ui-controller.js";
-import { ComputerPly, GameState, globalGameState, Player } from "./logic";
+import { ComputerPly, globalGameState, Player } from "./logic/logic";
 import { ErrorMessage, PlayButton, WinningMessage } from "./load.js";
+import { GameStateValue } from "./logic/GameState";
 
 const WINNING_CHANNEL = "win";
 
@@ -40,12 +41,12 @@ export class Turn {
   changeTurn() {
     GridController.displayTurn();
     if (this.next === this.left) {
-      globalGameState.changeState(GameState.states["COMPUTER_TURN"]);
+      globalGameState.changeState(GameStateValue.COMPUTER_TURN);
       this.next = this.right;
       computerPlay();
     } else {
       this.next = this.left;
-      globalGameState.changeState(GameState.states["PLAYER_TURN"]);
+      globalGameState.changeState(GameStateValue.PLAYER_TURN);
     }
   }
 
@@ -59,7 +60,7 @@ export class Turn {
 
   startPlaying() {
     this.play = true;
-    globalGameState.changeState(GameState.states["PLAYER_TURN"]);
+    globalGameState.changeState(GameStateValue.PLAYER_TURN);
     GridController.removeDragListeners();
   }
 }

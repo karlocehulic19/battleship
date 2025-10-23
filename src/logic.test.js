@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-import { Ship, GameBoard, Player, ComputerPly, shuffle } from "./logic";
+import { Ship, GameBoard, Player, ComputerPly, shuffle } from "./logic/logic";
 
 describe("Ships", () => {
   let ship;
