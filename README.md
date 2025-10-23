@@ -3,4 +3,5 @@
 <p align="center">Battleship is a single-player game classic implemented in Web using primarily JavaScript to showcase my Frontend Development Skills. You (Player) play the opponent (Computer), and your goal is to find all of the opponent's ships.</p>
 
 ## Live application:
+
 You can view live application: <a>https://karlocehulic19.github.io/battleship/<a/>
