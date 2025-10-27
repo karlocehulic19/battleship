@@ -5,7 +5,7 @@ import {
   ShipContainerController,
   leftGrid,
   rightGrid,
-} from "./ui-controller.js";
+} from "./ui-controller";
 import { ComputerPly, globalGameState, Player } from "./logic/logic";
 import { ErrorMessage, PlayButton, WinningMessage } from "./load";
 import { GameStateValue } from "./logic/GameState";

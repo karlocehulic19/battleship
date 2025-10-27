@@ -1,18 +1,19 @@
-import { placeFromEvent, turn, ply1 } from ".";
+import { placeFromEvent, turn, ply1 } from "./index";
 import emptyUrl from "../media/cross.svg";
-import PubSub from "pubsub-js";
 import { ErrorMessage } from "./load";
+import { GameBoard } from "./logic/logic";
 
 export class GridController {
   static cellClickEvents = [];
   static cellDragEvents = [];
   static cellDropEvents = [];
-  constructor(selectedDiv) {
+  private div: HTMLDivElement;
+  constructor(selectedDiv: HTMLDivElement) {
     this.div = selectedDiv;
   }
-  showShip(m, n, length, vertical = false) {
+  showShip(m: number, n: number, length: number, vertical = false) {
     for (let i = 0; i < length; i++) {
-      let cell;
+      let cell: HTMLDivElement;
       if (vertical)
         cell = this.div.querySelector(`[data-row="${m + i}"][data-col="${n}"]`);
       else
@@ -20,7 +21,7 @@ export class GridController {
       cell.classList.add("ship");
     }
   }
-  reviewEmpty(m, n) {
+  reviewEmpty(m: number, n: number) {
     const cell = this.div.querySelector(`[data-row="${m}"][data-col="${n}"]`);
     const emptyImg = document.createElement("img");
 
@@ -28,7 +29,7 @@ export class GridController {
 
     cell.appendChild(emptyImg);
   }
-  reviewShip(m, n) {
+  reviewShip(m: number, n: number) {
     const cell = this.div.querySelector(`[data-row="${m}"][data-col="${n}"]`);
     const shipImg = document.createElement("img");
 
@@ -37,7 +38,7 @@ export class GridController {
     cell.classList.add("ship");
     cell.appendChild(shipImg);
   }
-  static clearGrid(specific) {
+  static clearGrid(specific?: HTMLElement) {
     const grid = specific || document.body;
     grid.querySelectorAll(".cell").forEach((cell) => {
       cell.textContent = "";
@@ -53,10 +54,11 @@ export class GridController {
   }
   makeCellsAcceptDrag() {
     this.div.querySelectorAll(".cell").forEach((cell) => {
-      const addDrag = (e) => {
+      const addDrag = (e: Event) => {
         const ship = DragShip.picked;
-        const currRow = +e.target.getAttribute("data-row");
-        const currCol = +e.target.getAttribute("data-col");
+        const target = e.target as HTMLElement;
+        const currRow = +target.getAttribute("data-row");
+        const currCol = +target.getAttribute("data-col");
         let targetRow = currRow;
         let targetCol = currCol;
         if (ship.vertical) {
@@ -76,7 +78,7 @@ export class GridController {
         elem.appendChild(ship.getElement());
         ship.place(targetRow, targetCol);
       };
-      const onDrop = (e) => {
+      const onDrop = (e: Event) => {
         try {
           ply1.logic.board.place(...DragShip.picked.getPlacingValue());
         } catch (error) {
@@ -93,14 +95,18 @@ export class GridController {
     });
   }
   static addListenersToCells(computer = true) {
-    let grid = document;
+    let grid = document.body;
     if (computer) grid = document.querySelector("#right-playing-div");
     grid.querySelectorAll(".cell").forEach((cell) => {
       // Last arguments represents witch cell was clicked, left or right side one
       // True for left
       const funct = () => {
         if (!turn.isPlaying()) {
-          document.querySelector(".play-btn").click();
+          const playBtn = document.querySelector(
+            ".play-btn",
+          ) as HTMLButtonElement;
+          playBtn.click();
+
           if (!turn.isPlaying()) return;
         }
         placeFromEvent(
@@ -132,12 +138,22 @@ export class GridController {
 }
 
 export class ShipContainerController {
-  constructor(div, board, computer = false, hide = false) {
+  private div: HTMLDivElement;
+  private container: HTMLDivElement;
+  private ships: any[];
+  private computer: boolean;
+
+  constructor(
+    div: HTMLDivElement,
+    board: GameBoard,
+    computer = false,
+    hide = false,
+  ) {
     this.div = div;
     this.container = div.querySelector(".ship-container");
     this.container.textContent = "";
     this.computer = computer;
-    if (computer) {
+    if (this.computer) {
       this.ships = board.ships;
       this.ships.sort((a, b) => b[2] - a[2]);
       this.ships.forEach((ship) => {
@@ -154,7 +170,7 @@ export class ShipContainerController {
       }
     }
   }
-  createShip(length) {
+  createShip(length: number) {
     const ship = document.createElement("div");
     const size = getComputedStyle(this.div.querySelector(".cell")).height;
     for (let n = 0; n < length; n++) {
@@ -174,9 +190,17 @@ export class ShipContainerController {
 }
 
 class DragShip {
-  static picked;
+  static picked: DragShip;
   static shipId = 0;
-  constructor(length) {
+
+  private m: number;
+  private n: number;
+  private shipId: number;
+  private main: HTMLDivElement;
+  cellFrom: number;
+  length: number;
+  vertical: boolean;
+  constructor(length: number) {
     this.length = length;
     this.m = null;
     this.n = null;
@@ -212,7 +236,7 @@ class DragShip {
       ply1.logic.board.remove(...this.getPlacingValue());
     }
   }
-  rotate(e) {
+  rotate(e: Event) {
     try {
       this.clear();
       this.vertical = !this.vertical;
@@ -224,9 +248,12 @@ class DragShip {
       this.sendBack(e, true);
     }
   }
-  sendBack(e, ignore = false) {
+  sendBack(e: Event, ignore = false) {
     this.getElement().classList.remove("transparent");
-    if (ignore || e.dataTransfer.dropEffect === "none") {
+    if (
+      ignore ||
+      (e instanceof DragEvent && e.dataTransfer.dropEffect === "none")
+    ) {
       this.getElement().classList.remove("on-grid");
       document
         .querySelector("#left-playing-div .ship-container")
@@ -237,7 +264,7 @@ class DragShip {
   getElement() {
     return this.main;
   }
-  place(m, n) {
+  place(m: number, n: number) {
     this.getElement().classList.add("on-grid");
     this.m = m;
     this.n = n;
@@ -246,13 +273,17 @@ class DragShip {
     this.m = null;
     this.n = null;
   }
-  getPlacingValue() {
+  getPlacingValue(): [number, number, number, boolean] {
     return [this.m, this.n, this.length, this.vertical];
   }
 }
 
 class DragShipCell {
-  constructor(id, publish) {
+  private id: number;
+  private publish: string;
+  private main: HTMLDivElement;
+
+  constructor(id: number, publish: string) {
     this.id = id;
     this.publish = publish;
     this.create();

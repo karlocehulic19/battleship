@@ -26,7 +26,7 @@ export class GameBoard {
   static BOARD_SIZE = 10;
 
   private aliveShips: number;
-  private ships: any[];
+  ships: any[];
   constructor() {
     // Board represented as m * n grid
     this.aliveShips = 0;
