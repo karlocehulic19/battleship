@@ -1,6 +1,5 @@
 import "./styles.css";
 import PubSub from "pubsub-js";
-import "./load.js";
 import {
   GridController,
   ShipContainerController,
@@ -8,7 +7,7 @@ import {
   rightGrid,
 } from "./ui-controller.js";
 import { ComputerPly, globalGameState, Player } from "./logic/logic";
-import { ErrorMessage, PlayButton, WinningMessage } from "./load.js";
+import { ErrorMessage, PlayButton, WinningMessage } from "./load";
 import { GameStateValue } from "./logic/GameState";
 
 const WINNING_CHANNEL = "win";

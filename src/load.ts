@@ -1,10 +1,10 @@
-import { randomize, reset, startGame } from ".";
+import { randomize, reset, startGame } from "./index";
 import { createActionText } from "./components/actionText";
 import { GameStateValue } from "./logic/GameState";
 import { globalGameState } from "./logic/logic";
 
 createActionText();
-export function createGrids(firstPlyName, scndPlyName) {
+export function createGrids(firstPlayerName: string, secondPlayerName: string) {
   const leftDiv = document.createElement("div");
   const rightDiv = document.createElement("div");
   const leftGrid = new Grid();
@@ -19,9 +19,9 @@ export function createGrids(firstPlyName, scndPlyName) {
   rightDiv.className = "playing-div";
   rightDiv.id = "right-playing-div";
 
-  leftName.textContent = firstPlyName;
+  leftName.textContent = firstPlayerName;
   leftName.classList.add("turn");
-  rightName.textContent = scndPlyName;
+  rightName.textContent = secondPlayerName;
 
   leftDiv.appendChild(leftGrid.getElement());
   leftDiv.appendChild(leftName);
@@ -36,16 +36,17 @@ export function createGrids(firstPlyName, scndPlyName) {
 
 class Grid {
   static SIZE = 10;
+  private mainDiv: HTMLDivElement;
   constructor() {
     this.mainDiv = document.createElement("div");
     this.mainDiv.className = "main-grid-div";
-    this.mainDiv.setAttribute(`data-size`, Grid.SIZE);
+    this.mainDiv.setAttribute(`data-size`, Grid.SIZE.toString());
     for (let m = 0; m < Grid.SIZE; m++) {
       for (let n = 0; n < Grid.SIZE; n++) {
         const cell = document.createElement("div");
         cell.className = "cell";
-        cell.setAttribute("data-row", m);
-        cell.setAttribute("data-col", n);
+        cell.setAttribute("data-row", m.toString());
+        cell.setAttribute("data-col", n.toString());
         this.mainDiv.appendChild(cell);
       }
     }
@@ -55,11 +56,17 @@ class Grid {
   }
 }
 
+type ShipContainerOptions = {
+  isOpponent?: boolean;
+};
+
 class ShipContainer {
-  constructor(options) {
+  private container: HTMLDivElement;
+
+  constructor(options?: ShipContainerOptions) {
     this.container = document.createElement("div");
     this.container.classList.add("ship-container");
-    if (options && options.isOpponent) {
+    if (options?.isOpponent) {
       this.container.classList.add("opponent");
     } else {
       this.container.classList.add("player");
@@ -73,7 +80,9 @@ class ShipContainer {
 createGrids("Player", "Computer");
 
 export class ErrorMessage {
-  constructor(error) {
+  private div: HTMLDivElement;
+
+  constructor(error: string) {
     const errorDiv = document.createElement("div");
     const errorP = document.createElement("p");
 
@@ -84,7 +93,7 @@ export class ErrorMessage {
     errorDiv.appendChild(errorP);
     this.div = errorDiv;
   }
-  show(ms) {
+  show(ms: number) {
     document.body.appendChild(this.div);
     if (ms) setTimeout(() => this.remove(), ms);
   }
@@ -95,7 +104,7 @@ export class ErrorMessage {
 
 export class WinningMessage {
   static winDiv = document.createElement("div");
-  static create(name, boatsLeft, callBack) {
+  static create(name: string, boatsLeft: number, callBack: () => any) {
     const winP = document.createElement("p");
     const resetButton = document.createElement("button");
 
@@ -147,6 +156,8 @@ class FunctButtons {
 }
 
 export class PlayButton {
+  private btn: HTMLButtonElement;
+
   constructor() {
     this.btn = document.createElement("button");
     this.btn.className = "play-btn";
