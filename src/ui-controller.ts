@@ -62,7 +62,7 @@ export class GridController {
         const currCol = +target.getAttribute("data-col");
         let targetRow = currRow;
         let targetCol = currCol;
-        if (ship.vertical) {
+        if (ship.placingItem.vertical) {
           targetRow =
             currRow - ship.cellFrom > -1 ? currRow - ship.cellFrom : 0;
           targetRow =
@@ -199,15 +199,15 @@ class DragShip {
   private n: number;
   private shipId: number;
   private main: HTMLDivElement;
+  placingItem: PlacingItem;
   cellFrom: number;
   length: number;
-  vertical: boolean;
-  constructor(item: PlacingItem) {
-    this.length = item.length;
+  constructor(placingItem: PlacingItem) {
+    this.placingItem = placingItem;
+    this.length = placingItem.length;
     this.m = null;
     this.n = null;
     this.shipId = DragShip.shipId;
-    this.vertical = false;
     DragShip.shipId++;
     this.cellFrom = 0;
     this.create();
@@ -241,8 +241,9 @@ class DragShip {
   rotate(e: Event) {
     try {
       this.clear();
-      this.vertical = !this.vertical;
       this.main.classList.toggle("vertical");
+      this.placingItem.changeDirection();
+
       if (this.m !== null && this.n !== null)
         ply1.logic.board.place(...this.getPlacingValue());
     } catch (error) {
@@ -276,7 +277,7 @@ class DragShip {
     this.n = null;
   }
   getPlacingValue(): [number, number, number, boolean] {
-    return [this.m, this.n, this.length, this.vertical];
+    return [this.m, this.n, this.length, this.placingItem.vertical];
   }
 }
 
