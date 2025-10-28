@@ -2,6 +2,7 @@ import { placeFromEvent, turn, ply1 } from "./index";
 import emptyUrl from "../media/cross.svg";
 import { ErrorMessage } from "./load";
 import { GameBoard } from "./logic/logic";
+import { PlacingItem } from "./logic/Ship";
 
 export class GridController {
   static cellClickEvents = [];
@@ -146,6 +147,7 @@ export class ShipContainerController {
   constructor(
     div: HTMLDivElement,
     board: GameBoard,
+    placingItems: PlacingItem[],
     computer = false,
     hide = false,
   ) {
@@ -164,8 +166,8 @@ export class ShipContainerController {
         });
       });
     } else if (!hide) {
-      for (let n of [5, 4, 3, 3, 2]) {
-        const dragShip = new DragShip(n);
+      for (const item of placingItems) {
+        const dragShip = new DragShip(item);
         this.container.appendChild(dragShip.getElement());
       }
     }
@@ -200,8 +202,8 @@ class DragShip {
   cellFrom: number;
   length: number;
   vertical: boolean;
-  constructor(length: number) {
-    this.length = length;
+  constructor(item: PlacingItem) {
+    this.length = item.length;
     this.m = null;
     this.n = null;
     this.shipId = DragShip.shipId;

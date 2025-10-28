@@ -7,10 +7,12 @@ import {
   rightGrid,
 } from "./ui-controller";
 import { ComputerPly, globalGameState, Player } from "./logic/logic";
+import { Ship } from "./logic/Ship";
 import { ErrorMessage, PlayButton, WinningMessage } from "./load";
 import { GameStateValue } from "./logic/GameState";
 
 const WINNING_CHANNEL = "win";
+const defualtShipSizes = [5, 4, 3, 3, 2];
 
 export class Turn {
   private left: GridPlayer;
@@ -89,13 +91,16 @@ function play() {
   };
   new PlayButton();
   turn = new Turn(ply1, ply2);
+
   ply1.container = new ShipContainerController(
     document.querySelector("#left-playing-div"),
     ply1.logic.board,
+    Ship.getShipFleetFromArray(defualtShipSizes),
   );
   ply2.container = new ShipContainerController(
     document.querySelector("#right-playing-div"),
     ply2.logic.board,
+    [],
     turn.isComputerPlaying(),
   );
 
@@ -162,6 +167,7 @@ export function randomize() {
   ply1.container = new ShipContainerController(
     document.querySelector("#left-playing-div"),
     ply1.logic.board,
+    Ship.getShipFleetFromArray(defualtShipSizes),
     false,
     true,
   );
@@ -188,6 +194,7 @@ export function reset() {
   ply1.container = new ShipContainerController(
     document.querySelector("#left-playing-div"),
     ply1.logic.board,
+    Ship.getShipFleetFromArray(defualtShipSizes),
   );
 }
 
