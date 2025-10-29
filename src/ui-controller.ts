@@ -2,7 +2,7 @@ import { placeFromEvent, turn, ply1 } from "./index";
 import emptyUrl from "../media/cross.svg";
 import { ErrorMessage } from "./load";
 import { GameBoard } from "./logic/logic";
-import { PlacingItem } from "./logic/Ship";
+import { GameItem } from "./logic/interfaces/GameItem";
 
 export class GridController {
   static cellClickEvents = [];
@@ -147,7 +147,7 @@ export class ShipContainerController {
   constructor(
     div: HTMLDivElement,
     board: GameBoard,
-    placingItems: PlacingItem[],
+    placingItems: GameItem[],
     computer = false,
     hide = false,
   ) {
@@ -199,10 +199,10 @@ class DragShip {
   private n: number;
   private shipId: number;
   private main: HTMLDivElement;
-  placingItem: PlacingItem;
+  placingItem: GameItem;
   cellFrom: number;
   length: number;
-  constructor(placingItem: PlacingItem) {
+  constructor(placingItem: GameItem) {
     this.placingItem = placingItem;
     this.length = placingItem.length;
     this.m = null;

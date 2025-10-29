@@ -1,10 +1,7 @@
-export interface PlacingItem {
-  length: number;
-  vertical: boolean;
-  changeDirection(): boolean;
-}
+import { ShipCell } from "./ShipCell";
+import { GameItem } from "./interfaces/GameItem";
 
-export class Ship implements PlacingItem {
+export class Ship implements GameItem {
   length: number;
   vertical: boolean;
   static getNewShipFleetFromArray(array: number[]) {
