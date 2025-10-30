@@ -21,12 +21,14 @@ export class Ship {
   }
 }
 
+type BoardShipInfo = [number, number, number, boolean, Ship];
+
 export class GameBoard {
   private static shipId = 0;
   static BOARD_SIZE = 10;
 
   private aliveShips: number;
-  ships: any[];
+  ships: BoardShipInfo[];
   constructor() {
     // Board represented as m * n grid
     this.aliveShips = 0;
@@ -45,7 +47,7 @@ export class GameBoard {
     const pubSubChannel = `board-channel-${GameBoard.shipId++}`;
     const newShip = new Ship(length, pubSubChannel);
     PubSub.subscribe(pubSubChannel, () => this.sinkAnother());
-    this.ships.push([...arguments, newShip]);
+    this.ships.push([m, n, length, vertical, newShip]);
     try {
       if (!vertical) {
         for (let i = 0; i < length; i++) {
