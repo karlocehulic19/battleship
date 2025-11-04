@@ -1,34 +1,20 @@
 import PubSub from "pubsub-js";
 import { GameState } from "./GameState";
+import { Ship } from "./Ship";
+import { GameItem } from "./interfaces/GameItem";
 
-export class Ship {
-  private hp: number;
-  private publish: PubSubJS.Message;
-
-  constructor(length: number, publish: PubSubJS.Message) {
-    this.hp = length;
-    this.publish = publish;
-  }
-  hit() {
-    if (!this.hp) throw new Error("Ship already sank");
-    this.hp--;
-    if (!this.hp) {
-      PubSub.publishSync(this.publish);
-    }
-  }
-  isSunk() {
-    return !this.hp;
-  }
-}
-
-type BoardShipInfo = [number, number, number, boolean, Ship];
+export type CoordinatesAndShip = {
+  row: number;
+  col: number;
+  ship: Ship;
+};
 
 export class GameBoard {
   private static shipId = 0;
   static BOARD_SIZE = 10;
 
   private aliveShips: number;
-  ships: BoardShipInfo[];
+  ships: CoordinatesAndShip[];
   constructor() {
     // Board represented as m * n grid
     this.aliveShips = 0;
@@ -40,25 +26,31 @@ export class GameBoard {
       }
     }
   }
-  place(m: number, n: number, length: number, vertical = false) {
+  place(m: number, n: number, item: GameItem) {
+    const length = item.length;
+    const ship = new Ship(item.length, this, "", item.vertical);
     this.checkPlace(m, n);
-    this.checkLength(m, n, length, vertical);
+    this.checkLength(m, n, ship.length, ship.vertical);
     let _cells = [];
     const pubSubChannel = `board-channel-${GameBoard.shipId++}`;
-    const newShip = new Ship(length, pubSubChannel);
+    ship.publishChannel = pubSubChannel;
     PubSub.subscribe(pubSubChannel, () => this.sinkAnother());
-    this.ships.push([m, n, length, vertical, newShip]);
+    this.ships.push({
+      row: m,
+      col: n,
+      ship: ship,
+    });
     try {
-      if (!vertical) {
+      if (!ship.vertical) {
         for (let i = 0; i < length; i++) {
           this.checkPlace(m, n + i);
-          this[m][n + i].makeShip(newShip);
+          this[m][n + i].makeShip(ship);
           _cells.push(this[m][n + i]);
         }
       } else {
         for (let i = 0; i < length; i++) {
           this.checkPlace(m + i, n);
-          this[m + i][n].makeShip(newShip);
+          this[m + i][n].makeShip(ship);
           _cells.push(this[m + i][n]);
         }
       }
@@ -103,7 +95,10 @@ export class GameBoard {
   getAllShips() {
     return this.ships;
   }
-  remove(m: number, n: number, length: number, vertical = false) {
+  remove(m: number, n: number, item: GameItem) {
+    const length = item.length;
+    const vertical = item.vertical;
+
     for (let i = 0; i < length; i++) {
       let row = m;
       let col = n;
@@ -112,6 +107,20 @@ export class GameBoard {
       this[row][col] = new BoardCell();
     }
     this.sinkAnother();
+  }
+
+  getShipRow(ship: Ship) {
+    for (const coordsAndShip of this.ships) {
+      if (coordsAndShip.ship == ship) return coordsAndShip.row;
+    }
+    throw new Error("Ship not in board");
+  }
+
+  getShipCol(ship: Ship) {
+    for (const coordsAndShip of this.ships) {
+      if (coordsAndShip.ship == ship) return coordsAndShip.row;
+    }
+    throw new Error("Ship not in board");
   }
 }
 
@@ -125,8 +134,8 @@ class BoardCell {
     this.checked = false;
     this.ship = false;
   }
-  makeShip(shipObj: boolean) {
-    this.ship = shipObj;
+  makeShip(isShip: boolean) {
+    this.ship = isShip;
   }
   unmakeShip() {
     this.ship = false;
@@ -156,7 +165,11 @@ export class Player {
         const m = this.getRandomCoords();
         const n = this.getRandomCoords();
         const isVertical = !!Math.floor(Math.random() * 2);
-        this.board.place(m, n, lengths[i], isVertical);
+        this.board.place(
+          m,
+          n,
+          new Ship(lengths[i], this.board, "", isVertical),
+        );
         i++;
       } catch {
         continue;

@@ -1,8 +1,9 @@
 import { placeFromEvent, turn, ply1 } from "./index";
 import emptyUrl from "../media/cross.svg";
 import { ErrorMessage } from "./load";
-import { GameBoard } from "./logic/logic";
+import { CoordinatesAndShip, GameBoard } from "./logic/logic";
 import { GameItem } from "./logic/interfaces/GameItem";
+import { Ship } from "./logic/Ship";
 
 export class GridController {
   static cellClickEvents = [];
@@ -12,7 +13,10 @@ export class GridController {
   constructor(selectedDiv: HTMLDivElement) {
     this.div = selectedDiv;
   }
-  showShip(m: number, n: number, length: number, vertical = false) {
+  showShip(m: number, n: number, item: GameItem) {
+    const length = item.length;
+    const vertical = item.vertical;
+
     for (let i = 0; i < length; i++) {
       let cell: HTMLDivElement;
       if (vertical)
@@ -141,13 +145,13 @@ export class GridController {
 export class ShipContainerController {
   private div: HTMLDivElement;
   private container: HTMLDivElement;
-  private ships: any[];
+  private items: Ship[];
   private computer: boolean;
 
   constructor(
     div: HTMLDivElement,
     board: GameBoard,
-    placingItems: GameItem[],
+    placingItems: Ship[],
     computer = false,
     hide = false,
   ) {
@@ -156,12 +160,12 @@ export class ShipContainerController {
     this.container.textContent = "";
     this.computer = computer;
     if (this.computer) {
-      this.ships = board.ships;
-      this.ships.sort((a, b) => b[2] - a[2]);
-      this.ships.forEach((ship) => {
-        const shipElem = this.createShip(ship[2]);
+      this.items = placingItems;
+      this.items.sort((a, b) => b.length - a.length);
+      this.items.forEach((item) => {
+        const shipElem = this.createShip(item.length);
         this.container.appendChild(shipElem);
-        PubSub.subscribe(ship[4].publish, () => {
+        PubSub.subscribe(item.publishChannel, () => {
           shipElem.remove();
         });
       });
@@ -276,8 +280,8 @@ class DragShip {
     this.m = null;
     this.n = null;
   }
-  getPlacingValue(): [number, number, number, boolean] {
-    return [this.m, this.n, this.length, this.placingItem.vertical];
+  getPlacingValue(): [number, number, GameItem] {
+    return [this.m, this.n, this.placingItem];
   }
 }
 
