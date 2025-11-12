@@ -6,71 +6,19 @@ import {
   leftGrid,
   rightGrid,
 } from "./ui-controller";
-import { ComputerPly, globalGameState, Player } from "./logic/logic";
+import { ComputerPly, Player } from "./logic/logic";
 import { Ship } from "./logic/Ship";
 import { ErrorMessage, PlayButton, WinningMessage } from "./load";
-import { GameStateValue } from "./logic/GameState";
+import { Turn } from "./logic/Turn";
 
 const WINNING_CHANNEL = "win";
 const defaultShipSizes = [5, 4, 3, 3, 2];
-
-export class Turn {
-  private left: GridPlayer;
-  private right: GridPlayer;
-  private next: GridPlayer;
-  private play: boolean;
-
-  constructor(ply1: GridPlayer, ply2: GridPlayer) {
-    this.left = ply1;
-    this.right = ply2;
-    this.next = ply1;
-    this.play = false;
-  }
-
-  isLeftTurn() {
-    return this.next === this.left;
-  }
-
-  getNext() {
-    return this.next;
-  }
-
-  getNextAttacked() {
-    return this.next == this.left ? this.right : this.left;
-  }
-
-  changeTurn() {
-    GridController.displayTurn();
-    if (this.next === this.left) {
-      globalGameState.changeState(GameStateValue.COMPUTER_TURN);
-      this.next = this.right;
-      computerPlay();
-    } else {
-      this.next = this.left;
-      globalGameState.changeState(GameStateValue.PLAYER_TURN);
-    }
-  }
-
-  isComputerPlaying() {
-    return this.right.logic instanceof ComputerPly;
-  }
-
-  isPlaying() {
-    return this.play;
-  }
-
-  startPlaying() {
-    this.play = true;
-    globalGameState.changeState(GameStateValue.PLAYER_TURN);
-    GridController.removeDragListeners();
-  }
-}
 
 export let ply1: GridPlayer;
 let ply2: GridPlayer;
 export let turn;
 
-type GridPlayer = {
+export type GridPlayer = {
   logic: Player;
   grid: any;
   name: string;
@@ -138,7 +86,7 @@ export function placeFromEvent(m, n, left) {
   }
 }
 
-async function computerPlay() {
+export async function computerPlay() {
   while (!turn.isLeftTurn()) {
     const nextAttack = turn.getNext().logic.guessRandom();
     await new Promise((resolve) => setTimeout(resolve, 1000));
