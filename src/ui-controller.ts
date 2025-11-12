@@ -151,7 +151,6 @@ export class ShipContainerController {
   constructor(
     div: HTMLDivElement,
     board: GameBoard,
-    placingItems: Ship[],
     computer = false,
     hide = false,
   ) {
@@ -160,7 +159,7 @@ export class ShipContainerController {
     this.container.textContent = "";
     this.computer = computer;
     if (this.computer) {
-      this.items = placingItems;
+      this.items = board.getAllShips().map((coordAndShip) => coordAndShip.ship);
       this.items.sort((a, b) => b.length - a.length);
       this.items.forEach((item) => {
         const shipElem = this.createShip(item.length);
@@ -170,7 +169,8 @@ export class ShipContainerController {
         });
       });
     } else if (!hide) {
-      for (const item of placingItems) {
+      this.items = board.getAllPossibleShips();
+      for (const item of this.items) {
         const dragShip = new DragShip(item);
         this.container.appendChild(dragShip.getElement());
       }

@@ -7,12 +7,10 @@ import {
   rightGrid,
 } from "./ui-controller";
 import { ComputerPly, Player } from "./logic/logic";
-import { Ship } from "./logic/Ship";
 import { ErrorMessage, PlayButton, WinningMessage } from "./load";
 import { Turn } from "./logic/Turn";
 
 const WINNING_CHANNEL = "win";
-const defaultShipSizes = [5, 4, 3, 3, 2];
 
 export let ply1: GridPlayer;
 let ply2: GridPlayer;
@@ -43,12 +41,10 @@ function play() {
   ply1.container = new ShipContainerController(
     document.querySelector("#left-playing-div"),
     ply1.logic.board,
-    Ship.getNewShipFleetFromArray(defaultShipSizes, ply1.logic.board),
   );
   ply2.container = new ShipContainerController(
     document.querySelector("#right-playing-div"),
     ply2.logic.board,
-    Ship.getNewShipFleetFromArray(defaultShipSizes, ply2.logic.board),
     turn.isComputerPlaying(),
   );
 
@@ -115,7 +111,6 @@ export function randomize() {
   ply1.container = new ShipContainerController(
     document.querySelector("#left-playing-div"),
     ply1.logic.board,
-    Ship.getNewShipFleetFromArray(defaultShipSizes, ply1.logic.board),
     false,
     true,
   );
@@ -146,7 +141,6 @@ export function reset() {
   ply1.container = new ShipContainerController(
     document.querySelector("#left-playing-div"),
     ply1.logic.board,
-    Ship.getNewShipFleetFromArray(defaultShipSizes, ply1.logic.board),
   );
 }
 

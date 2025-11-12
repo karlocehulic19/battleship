@@ -11,6 +11,7 @@ export type CoordinatesAndShip = {
 
 export class GameBoard {
   private static shipId = 0;
+  private static defualtShipLengths = [5, 4, 3, 3, 2];
   static BOARD_SIZE = 10;
 
   private aliveShips: number;
@@ -122,6 +123,19 @@ export class GameBoard {
     }
     throw new Error("Ship not in board");
   }
+
+  getAllPossibleShips(): Ship[] {
+    const items = [];
+    for (const l of GameBoard.defualtShipLengths) {
+      items.push(new Ship(l, this));
+    }
+
+    return items;
+  }
+
+  static getDefaultShipSizes() {
+    return this.defualtShipLengths;
+  }
 }
 
 export const globalGameState = new GameState();
@@ -159,7 +173,7 @@ export class Player {
   }
   placeShips() {
     let i = 0;
-    const lengths = [5, 4, 3, 3, 2];
+    const lengths = GameBoard.getDefaultShipSizes();
     while (i < lengths.length) {
       try {
         const m = this.getRandomCoords();
