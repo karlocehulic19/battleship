@@ -14,7 +14,7 @@ const WINNING_CHANNEL = "win";
 
 export let ply1: GridPlayer;
 let ply2: GridPlayer;
-export let turn;
+export let turn: any;
 
 export type GridPlayer = {
   logic: Player;
@@ -54,7 +54,7 @@ function play() {
   GridController.addListenersToCells(turn.isComputerPlaying());
 }
 
-export function placeFromEvent(m, n, left) {
+export function placeFromEvent(m: number, n: number, left: boolean) {
   if (turn.isLeftTurn() !== left) {
     try {
       const ply = turn.getNextAttacked();
@@ -70,9 +70,12 @@ export function placeFromEvent(m, n, left) {
         ply.grid.reviewEmpty(m, n);
         turn.changeTurn();
       }
-    } catch (errorMsg) {
-      const error = new ErrorMessage(errorMsg);
-      error.show(2000);
+    } catch (error) {
+      let errorMsg: ErrorMessage;
+      if (error instanceof Error) {
+        errorMsg = new ErrorMessage(error.message);
+        errorMsg.show(2000);
+      }
     }
   } else if (!turn.isComputerPlaying()) {
     const wrongGrid = new ErrorMessage(
@@ -90,7 +93,7 @@ export async function computerPlay() {
   }
 }
 
-function declareWinner(msg, data) {
+function declareWinner(msg: string, data: any) {
   WinningMessage.create(data.winnerName, data.winnerShipNumber, () => play());
 }
 

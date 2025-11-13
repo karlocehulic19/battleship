@@ -13,6 +13,7 @@ export class GameBoard {
   private static shipId = 0;
   private static defualtShipLengths = [5, 4, 3, 3, 2];
   static BOARD_SIZE = 10;
+  private board: BoardCell[][];
 
   private aliveShips: number;
   ships: CoordinatesAndShip[];
@@ -20,10 +21,11 @@ export class GameBoard {
     // Board represented as m * n grid
     this.aliveShips = 0;
     this.ships = [];
+    this.board = [];
     for (let m = 0; m < GameBoard.BOARD_SIZE; m++) {
-      this[m] = {};
+      this.board[m] = [];
       for (let n = 0; n < GameBoard.BOARD_SIZE; n++) {
-        this[m][n] = new BoardCell();
+        this.board[m][n] = new BoardCell();
       }
     }
   }
@@ -45,14 +47,14 @@ export class GameBoard {
       if (!ship.vertical) {
         for (let i = 0; i < length; i++) {
           this.checkPlace(m, n + i);
-          this[m][n + i].makeShip(ship);
-          _cells.push(this[m][n + i]);
+          this.board[m][n + i].makeShip(ship);
+          _cells.push(this.board[m][n + i]);
         }
       } else {
         for (let i = 0; i < length; i++) {
           this.checkPlace(m + i, n);
-          this[m + i][n].makeShip(ship);
-          _cells.push(this[m + i][n]);
+          this.board[m + i][n].makeShip(ship);
+          _cells.push(this.board[m + i][n]);
         }
       }
       this.aliveShips++;
@@ -63,7 +65,7 @@ export class GameBoard {
     }
   }
   isShip(m: number, n: number) {
-    return this[m][n].isShip();
+    return this.board[m][n].isShip();
   }
   checkPlace(m: number, n: number) {
     if (
@@ -73,7 +75,8 @@ export class GameBoard {
       n > GameBoard.BOARD_SIZE - 1
     )
       throw new Error("Wrong ship coordinates");
-    else if (this[m][n].isShip()) throw new Error("Cell already occupied");
+    else if (this.board[m][n].isShip())
+      throw new Error("Cell already occupied");
   }
   checkLength(m: number, n: number, length: number, vertical: boolean) {
     if (length < 1 || (!vertical && n + length - 1 > GameBoard.BOARD_SIZE - 1))
@@ -82,9 +85,9 @@ export class GameBoard {
       throw new Error("Ship too long");
   }
   receiveAttack(m: number, n: number) {
-    if (this[m][n].isChecked()) throw new Error("Cell already checked");
-    this[m][n].check();
-    if (this[m][n].isShip()) this[m][n].ship.hit();
+    if (this.board[m][n].isChecked()) throw new Error("Cell already checked");
+    this.board[m][n].check();
+    if (this.board[m][n].isShip()) this.board[m][n].hit();
     return this.isShip(m, n);
   }
   areAllSunk() {
@@ -105,7 +108,7 @@ export class GameBoard {
       let col = n;
       if (vertical) row = m + i;
       else col = n + i;
-      this[row][col] = new BoardCell();
+      this.board[row][col] = new BoardCell();
     }
     this.sinkAnother();
   }
@@ -142,26 +145,29 @@ export const globalGameState = new GameState();
 
 class BoardCell {
   private checked: boolean;
-  private ship: boolean;
+  private ship: Ship | null;
 
   constructor() {
     this.checked = false;
-    this.ship = false;
+    this.ship = null;
   }
-  makeShip(isShip: boolean) {
-    this.ship = isShip;
+  makeShip(ship: Ship) {
+    this.ship = ship;
   }
   unmakeShip() {
-    this.ship = false;
+    this.ship = null;
   }
   isShip() {
-    return !!this.ship;
+    return this.ship != null;
   }
   isChecked() {
     return this.checked;
   }
   check() {
     this.checked = true;
+  }
+  hit() {
+    this.ship?.hit();
   }
 }
 
@@ -202,6 +208,7 @@ export class ComputerPly extends Player {
 
   constructor() {
     super();
+    this.guesses = [];
     this.placeShips();
     this.createGuesses();
   }

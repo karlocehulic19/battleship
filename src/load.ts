@@ -30,8 +30,8 @@ export function createGrids(firstPlayerName: string, secondPlayerName: string) {
   rightDiv.appendChild(rightName);
   rightDiv.appendChild(rightContainer.getElement());
 
-  document.querySelector(".content").appendChild(leftDiv);
-  document.querySelector(".content").appendChild(rightDiv);
+  document.querySelector(".content")?.appendChild(leftDiv);
+  document.querySelector(".content")?.appendChild(rightDiv);
 }
 
 class Grid {
@@ -149,7 +149,7 @@ class FunctButtons {
     FunctButtons.buttonsDiv.className = "fnct-btn-div";
     document
       .querySelector("#left-playing-div")
-      .appendChild(FunctButtons.buttonsDiv);
+      ?.appendChild(FunctButtons.buttonsDiv);
     FunctButtons.createRandom();
     FunctButtons.createReset();
   }
