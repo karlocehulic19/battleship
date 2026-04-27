@@ -1,8 +1,8 @@
-import { placeFromEvent, turn, ply1 } from "./index";
-import emptyUrl from "../media/cross.svg";
+import { placeFromEvent, turn, ply1 } from "../index";
+import emptyUrl from "../../media/cross.svg";
 import { ErrorMessage } from "./load";
-import { PlayerAdapter, ShipToken } from "./logic/GameAdapter";
-import { GameItem } from "./logic/interfaces/GameItem";
+import { PlayerAdapter, ShipToken } from "../logic/GameAdapter";
+import { GameItem } from "../logic/interfaces/GameItem";
 
 type ElementAndHandler = [Element, (e: Event) => void];
 

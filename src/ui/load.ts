@@ -1,5 +1,5 @@
-import { randomize, reset, startGame } from "./index";
-import { createActionText } from "./components/actionText";
+import { randomize, reset, startGame } from "../index";
+import { createActionText } from "./actionText";
 
 createActionText();
 export function createGrids(firstPlayerName: string, secondPlayerName: string) {

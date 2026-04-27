@@ -5,9 +5,9 @@ import {
   ShipContainerController,
   leftGrid,
   rightGrid,
-} from "./ui-controller";
+} from "./ui/ui-controller";
 import { PlayerAdapter } from "./logic/GameAdapter";
-import { ErrorMessage, PlayButton, WinningMessage } from "./load";
+import { ErrorMessage, PlayButton, WinningMessage } from "./ui/load";
 import { Turn } from "./logic/Turn";
 import { GridPlayer } from "./types/GridPlayer";
 import { globalGameState } from "./logic/logic";
