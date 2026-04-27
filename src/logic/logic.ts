@@ -2,6 +2,8 @@ import PubSub from "pubsub-js";
 import { GameState } from "./GameState";
 import { Ship } from "./Ship";
 import { GameItem } from "./interfaces/GameItem";
+import { AIStrategy, BoardSnapshot, CellState } from "./interfaces/AIStrategy";
+import { RandomAIStrategy } from "./strategies/RandomAIStrategy";
 
 export type CoordinatesAndShip = {
   row: number;
@@ -142,6 +144,20 @@ export class GameBoard {
   static getDefaultShipSizes() {
     return this.defualtShipLengths;
   }
+
+  toSnapshot(): BoardSnapshot {
+    const cells: CellState[][] = this.board.map((row) =>
+      row.map((cell) => cell.getState()),
+    );
+    const sunkShipLengths = this.ships
+      .filter(({ ship }) => ship.isSunk())
+      .map(({ ship }) => ship.length);
+    return {
+      size: GameBoard.BOARD_SIZE,
+      cells,
+      sunkShipLengths,
+    };
+  }
 }
 
 export const globalGameState = new GameState();
@@ -171,6 +187,12 @@ class BoardCell {
   }
   hit() {
     this.ship?.hit();
+  }
+
+  getState(): CellState {
+    if (!this.checked) return CellState.UNKNOWN;
+    if (!this.ship) return CellState.MISS;
+    return this.ship.isSunk() ? CellState.SUNK : CellState.HIT;
   }
 }
 
@@ -207,25 +229,16 @@ export class Player {
 type Coordinates = [a: number, b: number];
 
 export class ComputerPly extends Player {
-  private guesses: Coordinates[];
+  private strategy: AIStrategy;
 
-  constructor() {
+  constructor(strategy: AIStrategy = new RandomAIStrategy()) {
     super();
-    this.guesses = [];
+    this.strategy = strategy;
     this.placeShips();
-    this.createGuesses();
   }
-  guessRandom() {
-    return this.guesses.pop();
-  }
-  async createGuesses() {
-    this.guesses = [];
-    for (let m = 0; m < GameBoard.BOARD_SIZE; m++) {
-      for (let n = 0; n < GameBoard.BOARD_SIZE; n++) {
-        this.guesses.push([m, n]);
-      }
-    }
-    shuffle(this.guesses);
+
+  chooseMove(opponentSnapshot: BoardSnapshot): [number, number] {
+    return this.strategy.nextMove(opponentSnapshot);
   }
 }
 

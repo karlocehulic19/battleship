@@ -308,30 +308,42 @@ describe("PlayerAdapter", () => {
 // ─── ComputerPly guesses ──────────────────────────────────────────────────────
 
 describe("ComputerPly guesses", () => {
+  function makeSnapshot(size = 10): { snapshot: import("./logic/interfaces/AIStrategy").BoardSnapshot; cells: import("./logic/interfaces/AIStrategy").CellState[][] } {
+    const { CellState } = require("./logic/interfaces/AIStrategy");
+    const cells: import("./logic/interfaces/AIStrategy").CellState[][] = Array.from({ length: size }, () =>
+      Array(size).fill(CellState.UNKNOWN),
+    );
+    return { snapshot: { size, cells, sunkShipLengths: [] }, cells };
+  }
+
   test("generates exactly 100 unique coordinates covering the full board", () => {
+    const { CellState } = require("./logic/interfaces/AIStrategy");
     const computer = new ComputerPly();
+    const { cells } = makeSnapshot();
     const seen = new Set<string>();
-    // Drain all guesses
-    let move = computer.guessRandom();
-    while (move !== undefined) {
+    for (let i = 0; i < 100; i++) {
+      const snapshot = { size: 10, cells, sunkShipLengths: [] };
+      const move = computer.chooseMove(snapshot);
       const key = `${move[0]},${move[1]}`;
       expect(seen.has(key)).toBe(false); // no repeats
       seen.add(key);
-      move = computer.guessRandom();
+      cells[move[0]][move[1]] = CellState.MISS;
     }
     expect(seen.size).toBe(100);
   });
 
   test("all generated coordinates are within board bounds [0,9]", () => {
+    const { CellState } = require("./logic/interfaces/AIStrategy");
     const computer = new ComputerPly();
-    let move = computer.guessRandom();
-    while (move !== undefined) {
-      const [row, col] = move;
+    const { cells } = makeSnapshot();
+    for (let i = 0; i < 100; i++) {
+      const snapshot = { size: 10, cells, sunkShipLengths: [] };
+      const [row, col] = computer.chooseMove(snapshot);
       expect(row).toBeGreaterThanOrEqual(0);
       expect(row).toBeLessThanOrEqual(9);
       expect(col).toBeGreaterThanOrEqual(0);
       expect(col).toBeLessThanOrEqual(9);
-      move = computer.guessRandom();
+      cells[row][col] = CellState.MISS;
     }
   });
 

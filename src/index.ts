@@ -86,7 +86,8 @@ export function placeFromEvent(m: number, n: number, left: boolean) {
 
 export async function computerPlay() {
   while (!turn.isLeftTurn()) {
-    const nextAttack = turn.getNext().adapter.nextMove();
+    const snapshot = ply1.adapter.getBoardSnapshot();
+    const nextAttack = turn.getNext().adapter.nextMove(snapshot);
     await new Promise((resolve) => setTimeout(resolve, 1000));
     placeFromEvent(nextAttack[0], nextAttack[1], true);
   }

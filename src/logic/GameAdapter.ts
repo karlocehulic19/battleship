@@ -1,5 +1,6 @@
 import { Player, ComputerPly, GameBoard } from "./logic";
 import { Ship } from "./Ship";
+import { AIStrategy, BoardSnapshot, CellState } from "./interfaces/AIStrategy";
 
 export type ShipToken = {
   id: string;
@@ -45,9 +46,9 @@ export class PlayerAdapter {
   private tokenMap: Map<string, Ship> = new Map();
   private tokenIdCounter = 0;
 
-  constructor(computer = false) {
+  constructor(computer = false, strategy?: AIStrategy) {
     this.isComputer = computer;
-    this.player = computer ? new ComputerPly() : new Player();
+    this.player = computer ? new ComputerPly(strategy) : new Player();
   }
 
   private get board(): GameBoard {
@@ -98,8 +99,23 @@ export class PlayerAdapter {
     return this.board.getAliveShipCount();
   }
 
-  nextMove(): [number, number] | undefined {
+  getBoardSnapshot(): BoardSnapshot {
+    return this.board.toSnapshot();
+  }
+
+  nextMove(opponentSnapshot?: BoardSnapshot): [number, number] | undefined {
     if (!(this.player instanceof ComputerPly)) return undefined;
-    return this.player.guessRandom();
+    return this.player.chooseMove(opponentSnapshot ?? PlayerAdapter.emptySnapshot());
+  }
+
+  private static emptySnapshot(): BoardSnapshot {
+    const size = GameBoard.BOARD_SIZE;
+    return {
+      size,
+      cells: Array.from({ length: size }, () =>
+        Array<CellState>(size).fill(CellState.UNKNOWN),
+      ),
+      sunkShipLengths: [],
+    };
   }
 }
