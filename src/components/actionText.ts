@@ -1,4 +1,4 @@
-import { globalGameState } from "../logic/logic";
+import PubSub from "pubsub-js";
 import { GameStateValue } from "../logic/GameState";
 
 export function createActionText() {
@@ -16,7 +16,10 @@ export function createActionText() {
   actionText.textContent = messageMapping[GameStateValue.PLACING_SHIPS];
   document.body.appendChild(actionText);
 
-  addEventListener(globalGameState.stateChangeEvent.type, () => {
-    actionText.textContent = messageMapping[globalGameState.state];
-  });
+  PubSub.subscribe(
+    "game_state_changed",
+    (_msg: string, state: GameStateValue) => {
+      actionText.textContent = messageMapping[state];
+    },
+  );
 }

@@ -1,3 +1,5 @@
+import PubSub from "pubsub-js";
+
 export enum GameStateValue {
   PLAYER_TURN,
   COMPUTER_TURN,
@@ -6,14 +8,9 @@ export enum GameStateValue {
 
 export class GameState {
   state = GameStateValue.PLAYER_TURN;
-  private _stateChangeEvent = new CustomEvent("game_state_changed");
 
   changeState(new_state: GameStateValue) {
     this.state = new_state;
-    dispatchEvent(this._stateChangeEvent);
-  }
-
-  get stateChangeEvent() {
-    return this._stateChangeEvent;
+    PubSub.publish("game_state_changed", this.state);
   }
 }

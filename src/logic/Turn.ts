@@ -1,7 +1,6 @@
-import { GridPlayer } from "../index";
+import PubSub from "pubsub-js";
+import { GridPlayer } from "../types/GridPlayer";
 import { GameStateValue } from "./GameState";
-import { GridController } from "../ui-controller";
-import { computerPlay } from "../index";
 import { globalGameState } from "./logic";
 import { ComputerPly } from "./logic";
 
@@ -31,14 +30,14 @@ export class Turn {
   }
 
   changeTurn() {
-    GridController.displayTurn();
     if (this.next === this.left) {
       globalGameState.changeState(GameStateValue.COMPUTER_TURN);
       this.next = this.right;
-      computerPlay();
+      PubSub.publish("turn_changed", false);
     } else {
       this.next = this.left;
       globalGameState.changeState(GameStateValue.PLAYER_TURN);
+      PubSub.publish("turn_changed", true);
     }
   }
 
@@ -53,6 +52,6 @@ export class Turn {
   startPlaying() {
     this.play = true;
     globalGameState.changeState(GameStateValue.PLAYER_TURN);
-    GridController.removeDragListeners();
+    PubSub.publish("game_started", null);
   }
 }

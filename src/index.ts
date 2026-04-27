@@ -9,19 +9,15 @@ import {
 import { ComputerPly, Player } from "./logic/logic";
 import { ErrorMessage, PlayButton, WinningMessage } from "./load";
 import { Turn } from "./logic/Turn";
+import { GridPlayer } from "./types/GridPlayer";
+
+export type { GridPlayer };
 
 const WINNING_CHANNEL = "win";
 
 export let ply1: GridPlayer;
 let ply2: GridPlayer;
 export let turn: any;
-
-export type GridPlayer = {
-  logic: Player;
-  grid: any;
-  name: string;
-  container?: any;
-};
 
 function play() {
   GridController.clearGrid();
@@ -160,3 +156,10 @@ export function startGame() {
 
 play();
 PubSub.subscribe(WINNING_CHANNEL, declareWinner);
+PubSub.subscribe("turn_changed", (_msg: string, isLeftTurn: boolean) => {
+  GridController.displayTurn();
+  if (!isLeftTurn) computerPlay();
+});
+PubSub.subscribe("game_started", () => {
+  GridController.removeDragListeners();
+});
