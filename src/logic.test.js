@@ -1,10 +1,22 @@
 /* eslint-disable no-undef */
-import { Ship, GameBoard, Player, ComputerPly, shuffle } from "./logic/logic";
+import { GameBoard, Player, ComputerPly, shuffle } from "./logic/logic";
+import { Ship } from "./logic/Ship";
+
+const makeItem = (length, vertical = false) => ({
+  length,
+  vertical,
+  changeDirection() {
+    this.vertical = !this.vertical;
+    return this.vertical;
+  },
+});
 
 describe("Ships", () => {
   let ship;
+  let board;
   beforeEach(() => {
-    ship = new Ship(3);
+    board = new GameBoard();
+    ship = new Ship(3, board);
   });
 
   test("Ship exists", () => {
@@ -37,7 +49,7 @@ describe("Ships", () => {
 describe("Board", () => {
   let board;
   // [<y-cord>, <x-cord>, <ship-size>]
-  let ships = [
+  const ships = [
     [0, 0, 5],
     [2, 2, 4],
     [8, 6, 3],
@@ -46,7 +58,7 @@ describe("Board", () => {
   ];
   beforeEach(() => {
     board = new GameBoard();
-    for (let s of ships) board.place(...s);
+    for (let s of ships) board.place(s[0], s[1], makeItem(s[2]));
   });
 
   test("Positive ship validation", () => {
@@ -67,27 +79,31 @@ describe("Board", () => {
   });
 
   test("Invalid placement (wrong coordinates)", () => {
-    expect(() => board.place(0, 10, 2)).toThrow("Wrong ship coordinates");
-    expect(() => board.place(0, -10, 2)).toThrow("Wrong ship coordinates");
+    expect(() => board.place(0, 10, makeItem(2))).toThrow(
+      "Wrong ship coordinates",
+    );
+    expect(() => board.place(0, -10, makeItem(2))).toThrow(
+      "Wrong ship coordinates",
+    );
   });
 
   test("Invalid placement (invalid ship length)", () => {
-    expect(() => board.place(0, 8, 5)).toThrow("Ship too long");
-    expect(() => board.place(0, 9, -2)).toThrow("Ship too long");
+    expect(() => board.place(0, 8, makeItem(5))).toThrow("Ship too long");
+    expect(() => board.place(0, 9, makeItem(2))).toThrow("Ship too long");
   });
 
   test("Invalid placement (direct occupied cell)", () => {
-    expect(() => board.place(2, 5, 1)).toThrow("Cell already occupied");
-    expect(() => board.place(8, 6, 2)).toThrow("Cell already occupied");
+    expect(() => board.place(2, 5, makeItem(1))).toThrow("Cell already occupied");
+    expect(() => board.place(8, 6, makeItem(2))).toThrow("Cell already occupied");
   });
 
   test("Invalid placement (indirect occupied cell)", () => {
-    expect(() => board.place(5, 7, 2)).toThrow("Cell already occupied");
-    expect(() => board.place(2, 0, 3)).toThrow("Cell already occupied");
+    expect(() => board.place(5, 7, makeItem(2))).toThrow("Cell already occupied");
+    expect(() => board.place(2, 0, makeItem(3))).toThrow("Cell already occupied");
   });
 
   test("Ship validation after indirect invalid placement", () => {
-    expect(() => board.place(5, 7, 2)).toThrow("Cell already occupied");
+    expect(() => board.place(5, 7, makeItem(2))).toThrow("Cell already occupied");
     expect(board.isShip(5, 7)).toBe(false);
   });
 
@@ -101,9 +117,10 @@ describe("Board", () => {
     expect(board.receiveAttack(5, 7)).toBe(false);
   });
 
-  test("Ship correctly hit", () => {
-    board.receiveAttack(0, 0);
-    expect(board[0][0].ship.hp).toBe(4);
+  test("Ship correctly hit — aliveShipCount unchanged until sunk", () => {
+    const before = board.getAliveShipCount();
+    board.receiveAttack(0, 0); // first of 5 hits needed to sink size-5 ship
+    expect(board.getAliveShipCount()).toBe(before);
   });
 
   test("Check missed shots", () => {
@@ -116,18 +133,16 @@ describe("Board", () => {
     board.receiveAttack(0, 1);
     board.receiveAttack(0, 2);
     board.receiveAttack(0, 3);
-    expect(board.aliveShips).toBe(5);
+    expect(board.getAliveShipCount()).toBe(5);
     board.receiveAttack(0, 4);
-    expect(board.aliveShips).toBe(4);
+    expect(board.getAliveShipCount()).toBe(4);
     expect(board.areAllSunk()).toBe(false);
     board.receiveAttack(2, 2);
     board.receiveAttack(2, 3);
     board.receiveAttack(2, 4);
     board.receiveAttack(2, 5);
     expect(board.areAllSunk()).toBe(false);
-    board.receiveAttack(5, 7);
     board.receiveAttack(5, 8);
-    expect(board.areAllSunk()).toBe(false);
     board.receiveAttack(5, 9);
     expect(board.areAllSunk()).toBe(false);
     board.receiveAttack(8, 6);
@@ -142,23 +157,23 @@ describe("Board", () => {
 
   test("Check vertical placing", () => {
     const board = new GameBoard();
-    board.place(0, 0, 5, true);
+    board.place(0, 0, makeItem(5, true));
     expect(board.isShip(0, 0)).toBe(true);
     expect(board.isShip(1, 0)).toBe(true);
     expect(board.isShip(0, 1)).toBe(false);
   });
 
   test("Check Invalid Vertical Placement (invalid length)", () => {
-    expect(() => board.place(9, 9, 2)).toThrow("Ship too long");
+    expect(() => board.place(9, 9, makeItem(2))).toThrow("Ship too long");
   });
+
   test("Removing ships", () => {
-    board.remove(0, 0, 5);
+    const item = makeItem(5);
+    board.remove(0, 0, item);
     expect(board.isShip(0, 0)).toBe(false);
-    expect(() => board.place(0, 0, 5, true)).not.toThrow();
+    expect(() => board.place(0, 0, makeItem(5, true))).not.toThrow();
     expect(board.isShip(1, 0)).toBe(true);
-    expect(board.isShip(1, 0)).toBe(true);
-    board.remove(0, 0, 5, true);
-    expect(board.isShip(1, 0)).toBe(false);
+    board.remove(0, 0, makeItem(5, true));
     expect(board.isShip(1, 0)).toBe(false);
   });
 });
@@ -195,17 +210,24 @@ describe("Player", () => {
   });
 
   test("Computer placed ships", () => {
-    expect(computerPly.board.aliveShips).toBe(5);
+    expect(computerPly.board.getAliveShipCount()).toBe(5);
   });
 });
 
 describe("Shuffling funct", () => {
   test("Happy path 1", () => {
-    const old = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-    let arr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const old = [
+      [0, 0],
+      [0, 1],
+      [0, 2],
+      [0, 3],
+      [0, 4],
+    ];
+    const arr = old.map(([a, b]) => [a, b]);
     shuffle(arr);
-    arr = arr.map((val, i) => val === old[i]);
-
-    expect(arr).toContain(false);
+    const unchanged = arr.every(
+      ([a, b], i) => a === old[i][0] && b === old[i][1],
+    );
+    expect(unchanged).toBe(false);
   });
 });

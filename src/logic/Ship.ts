@@ -1,3 +1,4 @@
+import PubSub from "pubsub-js";
 import { GameItem } from "./interfaces/GameItem";
 import { GameBoard } from "./logic";
 
