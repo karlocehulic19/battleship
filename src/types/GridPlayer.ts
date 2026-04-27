@@ -1,7 +1,7 @@
-import { Player } from "../logic/logic";
+import { PlayerAdapter } from "../logic/GameAdapter";
 
 export type GridPlayer = {
-  logic: Player;
+  adapter: PlayerAdapter;
   grid: any;
   name: string;
   container?: any;

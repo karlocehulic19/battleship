@@ -93,6 +93,9 @@ export class GameBoard {
   areAllSunk() {
     return !this.aliveShips;
   }
+  getAliveShipCount() {
+    return this.aliveShips;
+  }
   sinkAnother() {
     this.aliveShips--;
   }

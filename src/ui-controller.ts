@@ -1,9 +1,8 @@
 import { placeFromEvent, turn, ply1 } from "./index";
 import emptyUrl from "../media/cross.svg";
 import { ErrorMessage } from "./load";
-import { GameBoard } from "./logic/logic";
+import { PlayerAdapter, ShipToken } from "./logic/GameAdapter";
 import { GameItem } from "./logic/interfaces/GameItem";
-import { Ship } from "./logic/Ship";
 
 type ElementAndHandler = [Element, (e: Event) => void];
 
@@ -87,7 +86,7 @@ export class GridController {
       };
       const onDrop = (e: Event) => {
         try {
-          ply1.logic.board.place(...DragShip.picked.getPlacingValue());
+          ply1.adapter.placeShip(...DragShip.picked.getPlacingValue());
         } catch (error) {
           if (error instanceof Error) {
             new ErrorMessage(error.message).show(1000);
@@ -149,12 +148,12 @@ export class GridController {
 export class ShipContainerController {
   private div: HTMLDivElement;
   private container: HTMLDivElement | null;
-  private items: Ship[] = [];
+  private tokens: ShipToken[] = [];
   private computer: boolean;
 
   constructor(
     div: HTMLDivElement | null,
-    board: GameBoard,
+    adapter: PlayerAdapter,
     computer = false,
     hide = false,
   ) {
@@ -168,19 +167,21 @@ export class ShipContainerController {
     }
     this.computer = computer;
     if (this.computer) {
-      this.items = board.getAllShips().map((coordAndShip) => coordAndShip.ship);
-      this.items.sort((a, b) => b.length - a.length);
-      this.items.forEach((item) => {
-        const shipElem = this.createShip(item.length);
+      this.tokens = adapter
+        .getPlacedShips()
+        .map((p) => p.token)
+        .sort((a, b) => b.length - a.length);
+      this.tokens.forEach((token) => {
+        const shipElem = this.createShip(token.length);
         this.container?.appendChild(shipElem);
-        PubSub.subscribe(item.publishChannel, () => {
+        PubSub.subscribe(token.sunkChannel, () => {
           shipElem.remove();
         });
       });
     } else if (!hide) {
-      this.items = board.getAllPossibleShips();
-      for (const item of this.items) {
-        const dragShip = new DragShip(item);
+      this.tokens = adapter.getAvailableShips();
+      for (const token of this.tokens) {
+        const dragShip = new DragShip(token);
         this.container?.appendChild(dragShip.getElement());
       }
     }
@@ -214,10 +215,10 @@ class DragShip {
   private n: number | null;
   private shipId: number;
   private main: HTMLDivElement;
-  placingItem: GameItem;
+  placingItem: ShipToken;
   cellFrom: number;
   length: number;
-  constructor(placingItem: GameItem) {
+  constructor(placingItem: ShipToken) {
     this.placingItem = placingItem;
     this.length = placingItem.length;
     this.m = null;
@@ -250,7 +251,7 @@ class DragShip {
   }
   clear() {
     if (this.m !== null && this.n !== null) {
-      ply1.logic.board.remove(...this.getPlacingValue());
+      ply1.adapter.removeShip(...this.getPlacingValue());
     }
   }
   rotate(e: Event) {
@@ -260,7 +261,7 @@ class DragShip {
       this.placingItem.changeDirection();
 
       if (this.m !== null && this.n !== null)
-        ply1.logic.board.place(...this.getPlacingValue());
+        ply1.adapter.placeShip(...this.getPlacingValue());
     } catch (error) {
       // TODO: test if this is proper implmenentation
       if (error instanceof Error) {
@@ -296,7 +297,7 @@ class DragShip {
     this.m = null;
     this.n = null;
   }
-  getPlacingValue(): [number, number, GameItem] {
+  getPlacingValue(): [number, number, ShipToken] {
     if (this.m == null || this.n == null) {
       throw new Error("Ship hasn't yet been placed! ");
     }

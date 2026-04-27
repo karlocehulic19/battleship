@@ -6,10 +6,12 @@ import {
   leftGrid,
   rightGrid,
 } from "./ui-controller";
-import { ComputerPly, Player } from "./logic/logic";
+import { PlayerAdapter } from "./logic/GameAdapter";
 import { ErrorMessage, PlayButton, WinningMessage } from "./load";
 import { Turn } from "./logic/Turn";
 import { GridPlayer } from "./types/GridPlayer";
+import { globalGameState } from "./logic/logic";
+import { GameStateValue } from "./logic/GameState";
 
 export type { GridPlayer };
 
@@ -22,12 +24,12 @@ export let turn: any;
 function play() {
   GridController.clearGrid();
   ply1 = {
-    logic: new Player(),
+    adapter: new PlayerAdapter(),
     grid: leftGrid,
     name: "Player",
   };
   ply2 = {
-    logic: new ComputerPly(),
+    adapter: new PlayerAdapter(true),
     grid: rightGrid,
     name: "Computer",
   };
@@ -36,11 +38,11 @@ function play() {
 
   ply1.container = new ShipContainerController(
     document.querySelector("#left-playing-div"),
-    ply1.logic.board,
+    ply1.adapter,
   );
   ply2.container = new ShipContainerController(
     document.querySelector("#right-playing-div"),
-    ply2.logic.board,
+    ply2.adapter,
     turn.isComputerPlaying(),
   );
 
@@ -54,12 +56,13 @@ export function placeFromEvent(m: number, n: number, left: boolean) {
   if (turn.isLeftTurn() !== left) {
     try {
       const ply = turn.getNextAttacked();
-      if (ply.logic.board.receiveAttack(m, n)) {
+      const result = ply.adapter.attack(m, n);
+      if (result.hit) {
         ply.grid.reviewShip(m, n);
-        if (ply.logic.board.areAllSunk()) {
+        if (result.allSunk) {
           PubSub.publish(WINNING_CHANNEL, {
             winnerName: turn.getNext().name,
-            winnerShipNumber: turn.getNext().logic.board.aliveShips,
+            winnerShipNumber: turn.getNext().adapter.getAliveShipCount(),
           });
         }
       } else {
@@ -83,14 +86,17 @@ export function placeFromEvent(m: number, n: number, left: boolean) {
 
 export async function computerPlay() {
   while (!turn.isLeftTurn()) {
-    const nextAttack = turn.getNext().logic.guessRandom();
+    const nextAttack = turn.getNext().adapter.nextMove();
     await new Promise((resolve) => setTimeout(resolve, 1000));
     placeFromEvent(nextAttack[0], nextAttack[1], true);
   }
 }
 
 function declareWinner(msg: string, data: any) {
-  WinningMessage.create(data.winnerName, data.winnerShipNumber, () => play());
+  WinningMessage.create(data.winnerName, data.winnerShipNumber, () => {
+    globalGameState.changeState(GameStateValue.PLACING_SHIPS);
+    play();
+  });
 }
 
 export function randomize() {
@@ -101,7 +107,7 @@ export function randomize() {
   GridController.removeDragListeners();
   GridController.clearGrid(document.querySelector("#left-playing-div"));
   ply1 = {
-    logic: new Player(),
+    adapter: new PlayerAdapter(),
     grid: leftGrid,
     name: "Player",
   };
@@ -109,17 +115,15 @@ export function randomize() {
 
   ply1.container = new ShipContainerController(
     document.querySelector("#left-playing-div"),
-    ply1.logic.board,
+    ply1.adapter,
     false,
     true,
   );
 
-  ply1.logic.placeShips();
-  ply1.logic.board
-    .getAllShips()
-    .forEach((mapping) =>
-      ply1.grid.showShip(mapping.row, mapping.col, mapping.ship),
-    );
+  const placements = ply1.adapter.randomizeShips();
+  placements.forEach(({ row, col, token }) =>
+    ply1.grid.showShip(row, col, token),
+  );
 }
 
 export function reset() {
@@ -130,7 +134,7 @@ export function reset() {
   ply1.grid.makeCellsAcceptDrag();
   GridController.clearGrid(document.querySelector("#left-playing-div"));
   ply1 = {
-    logic: new Player(),
+    adapter: new PlayerAdapter(),
     grid: leftGrid,
     name: "Player",
   };
@@ -139,7 +143,7 @@ export function reset() {
 
   ply1.container = new ShipContainerController(
     document.querySelector("#left-playing-div"),
-    ply1.logic.board,
+    ply1.adapter,
   );
 }
 

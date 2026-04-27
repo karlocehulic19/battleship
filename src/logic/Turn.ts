@@ -2,7 +2,6 @@ import PubSub from "pubsub-js";
 import { GridPlayer } from "../types/GridPlayer";
 import { GameStateValue } from "./GameState";
 import { globalGameState } from "./logic";
-import { ComputerPly } from "./logic";
 
 export class Turn {
   private left: GridPlayer;
@@ -42,7 +41,7 @@ export class Turn {
   }
 
   isComputerPlaying() {
-    return this.right.logic instanceof ComputerPly;
+    return this.right.adapter.isComputer;
   }
 
   isPlaying() {
